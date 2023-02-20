@@ -83,8 +83,11 @@ const displayTransactions = function (transactions) {
 };
 
 //A function that erases the entire account balance
-const displayBalance = function (transactions) {
-  const balanceValue = transactions.reduce((acc, number) => acc + number);
+const displayBalance = function (account) {
+  const balanceValue = account.transactions.reduce(
+    (acc, number) => acc + number
+  );
+  account.balance = balanceValue;
   labelBalance.textContent = `${balanceValue}$`;
 };
 
@@ -136,10 +139,42 @@ const login = function (e) {
       currentAccount.userName.split(" ")[0]
     }!`;
     containerApp.style.opacity = 100;
-    displayTransactions(currentAccount.transactions);
-    displayBalance(currentAccount.transactions);
-    displayTotal(currentAccount);
+    updateUi(currentAccount);
   }
+  inputLoginUsername.value = "";
+  inputLoginPin.value = "";
 };
 
 btnLogin.addEventListener("click", login);
+
+//The function that updates UI.
+const updateUi = function (currentAccount) {
+  displayTransactions(currentAccount.transactions);
+  displayBalance(currentAccount);
+  displayTotal(currentAccount);
+};
+
+//A function that transfers funds between user accounts.
+const transfer = function (e) {
+  e.preventDefault();
+  const transferAmount = Number(inputTransferAmount.value);
+  const transferRecipient = inputTransferTo.value;
+  const recipientAccount = accounts.find(
+    (account) => account.nickName === transferRecipient
+  );
+
+  if (
+    transferAmount > 0 &&
+    transferAmount < currentAccount.balance &&
+    recipientAccount &&
+    currentAccount.nickName !== recipientAccount.nickName
+  ) {
+    recipientAccount.transactions.push(transferAmount);
+    currentAccount.transactions.push(transferAmount * -1);
+  }
+  updateUi(currentAccount);
+  inputTransferAmount.value = "";
+  inputTransferTo.value = "";
+};
+
+btnTransfer.addEventListener("click", transfer);
