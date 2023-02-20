@@ -178,3 +178,22 @@ const transfer = function (e) {
 };
 
 btnTransfer.addEventListener("click", transfer);
+
+const closeWallet = function (e) {
+  e.preventDefault();
+
+  if (
+    inputCloseUsername.value === currentAccount.nickName &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const currentAccountIndex = accounts.findIndex(
+      (account) => account.nickName === currentAccount.nickName
+    );
+    accounts.splice(currentAccountIndex, 1);
+    containerApp.style.opacity = 0;
+    labelWelcome.textContent = `Увійдіть до свого кабінету`;
+  }
+  console.log(accounts);
+};
+
+btnClose.addEventListener("click", closeWallet);
