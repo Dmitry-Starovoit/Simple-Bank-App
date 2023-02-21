@@ -179,6 +179,7 @@ const transfer = function (e) {
 
 btnTransfer.addEventListener("click", transfer);
 
+// A function that deletes the current account.
 const closeWallet = function (e) {
   e.preventDefault();
 
@@ -197,3 +198,19 @@ const closeWallet = function (e) {
 };
 
 btnClose.addEventListener("click", closeWallet);
+
+// A function that borrows money from the bank.
+const takeInLoan = function (e) {
+  e.preventDefault();
+  const loanAmount = Number(inputLoanAmount.value);
+  const loanCheck = currentAccount.transactions.some(
+    (transaction) => transaction > (loanAmount * 10) / 100
+  );
+  if (loanCheck) {
+    currentAccount.transactions.push(loanAmount);
+    updateUi(currentAccount);
+  }
+  inputLoanAmount.value = "";
+};
+
+btnLoan.addEventListener("click", takeInLoan);
