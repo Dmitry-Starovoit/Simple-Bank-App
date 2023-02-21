@@ -65,9 +65,14 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-const displayTransactions = function (transactions) {
+const displayTransactions = function (transactions, sort = false) {
   containerTransactions.innerHTML = "";
-  transactions.forEach(function (value, key) {
+
+  const tranascs = sort
+    ? transactions.slice().sort((x, y) => x - y)
+    : transactions;
+
+  tranascs.forEach(function (value, key) {
     const transType = value > 0 ? "deposit" : "withdrawal";
     const trans = `
         <div class="transactions__row">
@@ -214,3 +219,15 @@ const takeInLoan = function (e) {
 };
 
 btnLoan.addEventListener("click", takeInLoan);
+
+// A function that sorting all transactions.
+
+let areTransactionsSorted = false;
+
+const sortTransactions = function (e) {
+  e.preventDefault();
+  displayTransactions(currentAccount.transactions, !areTransactionsSorted);
+  areTransactionsSorted = !areTransactionsSorted;
+};
+
+btnSort.addEventListener("click", sortTransactions);
