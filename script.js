@@ -7,6 +7,18 @@ const account1 = {
   transactions: [500, 250, -300, 5000, -850, -110, -170, 1100],
   interest: 1.5,
   pin: 1111,
+  transactionsDates: [
+    "2023-01-10T14:43:31.074Z",
+    "2023-02-14T11:24:19.761Z",
+    "2023-02-15T10:45:23.907Z",
+    "2023-02-17T12:17:46.255Z",
+    "2023-02-19T15:14:06.486Z",
+    "2023-02-20T11:42:26.371Z",
+    "2023-02-22T07:43:59.331Z",
+    "2023-02-24T15:21:20.814Z",
+  ],
+  currency: "USD",
+  locale: "en-US",
 };
 
 const account2 = {
@@ -14,6 +26,18 @@ const account2 = {
   transactions: [2000, 6400, -1350, -70, -210, -2000, 5500, -30],
   interest: 1.3,
   pin: 2222,
+  transactionsDates: [
+    "2023-02-10T14:43:31.074Z",
+    "2023-02-14T11:24:19.761Z",
+    "2023-02-15T10:45:23.907Z",
+    "2023-02-17T12:17:46.255Z",
+    "2023-02-19T15:14:06.486Z",
+    "2023-02-20T11:42:26.371Z",
+    "2023-02-22T07:43:59.331Z",
+    "2023-02-24T15:21:20.814Z",
+  ],
+  currency: "UAH",
+  locale: "uk-UA",
 };
 
 const account3 = {
@@ -21,6 +45,18 @@ const account3 = {
   transactions: [900, -200, 280, 300, -200, 150, 1400, -400],
   interest: 0.8,
   pin: 3333,
+  transactionsDates: [
+    "2023-02-10T14:43:31.074Z",
+    "2023-02-14T11:24:19.761Z",
+    "2023-02-15T10:45:23.907Z",
+    "2023-02-17T12:17:46.255Z",
+    "2023-02-19T15:14:06.486Z",
+    "2023-02-20T11:42:26.371Z",
+    "2023-02-22T07:43:59.331Z",
+    "2023-02-24T15:21:20.814Z",
+  ],
+  currency: "PLN",
+  locale: "pl-PL",
 };
 
 const account4 = {
@@ -28,6 +64,15 @@ const account4 = {
   transactions: [530, 1300, 500, 40, 190],
   interest: 1,
   pin: 4444,
+  transactionsDates: [
+    "2023-02-10T14:43:31.074Z",
+    "2023-02-14T11:24:19.761Z",
+    "2023-02-15T10:45:23.907Z",
+    "2023-02-17T12:17:46.255Z",
+    "2023-02-19T15:14:06.486Z",
+  ],
+  currency: "EUR",
+  locale: "de_DE",
 };
 
 const account5 = {
@@ -35,6 +80,15 @@ const account5 = {
   transactions: [630, 800, 300, 50, 120],
   interest: 1.1,
   pin: 5555,
+  transactionsDates: [
+    "2023-02-10T14:43:31.074Z",
+    "2023-02-14T11:24:19.761Z",
+    "2023-02-15T10:45:23.907Z",
+    "2023-02-17T12:17:46.255Z",
+    "2023-02-19T15:14:06.486Z",
+  ],
+  currency: "USD",
+  locale: "en-US",
 };
 
 const accounts = [account1, account2, account3, account4, account5];
@@ -65,23 +119,56 @@ const inputLoanAmount = document.querySelector(".form__input--loan-amount");
 const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
-const displayTransactions = function (transactions, sort = false) {
+const formatedAllBalance = function (value, account) {
+  const formatedTrans = new Intl.NumberFormat(account.locale, {
+    style: "currency",
+    currency: account.currency,
+  }).format(value);
+  return formatedTrans;
+};
+
+const formatTransactionsDate = function (date, locale) {
+  const getDaysBetveen2Days = (nowDate, date) =>
+    Math.abs((nowDate - date) / (1000 * 60 * 60 * 24));
+  const daysPassed = Math.trunc(getDaysBetveen2Days(new Date(), date));
+  if (daysPassed === 0) return "Сьогодні";
+  if (daysPassed === 1) return "Вчора";
+  if (daysPassed <= 4) return `${daysPassed} дні назад`;
+  if (daysPassed >= 5 && daysPassed <= 10) return `${daysPassed} днів назад`;
+  else {
+    const day = `${date.getDate()}`.padStart(2, 0);
+    const mounth = `${date.getMonth() + 1}`.padStart(2, 0);
+    const year = date.getFullYear();
+
+    return `${day}/${mounth}/${year}`;
+  }
+};
+
+const displayTransactions = function (account, sort = false) {
   containerTransactions.innerHTML = "";
 
   const tranascs = sort
-    ? transactions.slice().sort((x, y) => x - y)
-    : transactions;
+    ? account.transactions.slice().sort((x, y) => x - y)
+    : account.transactions;
 
   tranascs.forEach(function (value, key) {
     const transType = value > 0 ? "deposit" : "withdrawal";
+
+    const date = new Date(account.transactionsDates[key]);
+    const transDate = formatTransactionsDate(date);
+
     const trans = `
         <div class="transactions__row">
           <div class="transactions__type transactions__type--${transType}">
             ${key + 1} ${transType}
           </div>
-          <div class="transactions__date">2 дня назад</div>
-          <div class="transactions__value">${value}$</div>
+          <div class="transactions__date">${transDate}</div>
+          <div class="transactions__value">${formatedAllBalance(
+            value,
+            account
+          )}</div>
         </div>
+        
     `;
     containerTransactions.insertAdjacentHTML("afterbegin", trans);
   });
@@ -93,7 +180,7 @@ const displayBalance = function (account) {
     (acc, number) => acc + number
   );
   account.balance = balanceValue;
-  labelBalance.textContent = `${balanceValue}$`;
+  labelBalance.textContent = `${formatedAllBalance(balanceValue, account)}`;
 };
 
 //A function that calculates transactions made from the account.
@@ -102,18 +189,18 @@ const displayTotal = function (account) {
   const totalIn = account.transactions
     .filter((transaction) => transaction > 0)
     .reduce((acc, transaction) => acc + transaction, 0);
-  labelSumIn.textContent = `${totalIn}$`;
+  labelSumIn.textContent = `${formatedAllBalance(totalIn, account)}`;
   // Calculate sum withdrawal.
   const totalOut = account.transactions
     .filter((transaction) => transaction < 0)
     .reduce((acc, transaction) => acc + transaction, 0);
-  labelSumOut.textContent = `${totalOut}$`;
+  labelSumOut.textContent = `${formatedAllBalance(totalOut, account)}`;
   // Calculate percent from deposites.
   const totalPercent = account.transactions
     .filter((transaction) => transaction > 0)
     .map((transaction) => (transaction * account.interest) / 100)
     .reduce((acc, transaction) => acc + transaction, 0);
-  labelSumInterest.textContent = `${totalPercent.toFixed(1)}$`;
+  labelSumInterest.textContent = `${formatedAllBalance(totalPercent, account)}`;
 };
 
 //A function that adds a property to an object nickName.
@@ -130,14 +217,13 @@ const createNickNames = function (accounts) {
 createNickNames(accounts);
 
 // Variable that records the selected object.
-let currentAccount;
+let currentAccount, currentTimeOut;
 // A function that shows all data about your account when logging in.
 const login = function (e) {
   e.preventDefault();
   currentAccount = accounts.find(
     (account) => account.nickName === inputLoginUsername.value
   );
-  console.log(currentAccount);
 
   if (currentAccount && currentAccount?.pin === Number(inputLoginPin.value)) {
     labelWelcome.textContent = `Вітаємо Вас, ${
@@ -148,13 +234,17 @@ const login = function (e) {
   }
   inputLoginUsername.value = "";
   inputLoginPin.value = "";
+  if (currentTimeOut) {
+    clearInterval(currentTimeOut);
+  }
+  currentTimeOut = startLogoutTimer();
 };
 
 btnLogin.addEventListener("click", login);
 
 //The function that updates UI.
 const updateUi = function (currentAccount) {
-  displayTransactions(currentAccount.transactions);
+  displayTransactions(currentAccount);
   displayBalance(currentAccount);
   displayTotal(currentAccount);
 };
@@ -176,6 +266,10 @@ const transfer = function (e) {
   ) {
     recipientAccount.transactions.push(transferAmount);
     currentAccount.transactions.push(transferAmount * -1);
+    recipientAccount.transactionsDates.push(new Date().toISOString());
+    currentAccount.transactionsDates.push(new Date().toISOString());
+    clearInterval(currentTimeOut);
+    currentTimeOut = startLogoutTimer();
   }
   updateUi(currentAccount);
   inputTransferAmount.value = "";
@@ -199,7 +293,6 @@ const closeWallet = function (e) {
     containerApp.style.opacity = 0;
     labelWelcome.textContent = `Увійдіть до свого кабінету`;
   }
-  console.log(accounts);
 };
 
 btnClose.addEventListener("click", closeWallet);
@@ -207,23 +300,26 @@ btnClose.addEventListener("click", closeWallet);
 // A function that borrows money from the bank.
 const takeInLoan = function (e) {
   e.preventDefault();
-  const loanAmount = Number(inputLoanAmount.value);
+  const loanAmount = Math.floor(inputLoanAmount.value);
   const loanCheck = currentAccount.transactions.some(
     (transaction) => transaction > (loanAmount * 10) / 100
   );
   if (loanCheck) {
     currentAccount.transactions.push(loanAmount);
+    currentAccount.transactionsDates.push(new Date().toISOString());
     updateUi(currentAccount);
+    clearInterval(currentTimeOut);
+    currentTimeOut = startLogoutTimer();
   }
   inputLoanAmount.value = "";
 };
 
 btnLoan.addEventListener("click", takeInLoan);
 
-// A function that sorting all transactions.
-
+// Variable that default value false.
 let areTransactionsSorted = false;
 
+// A function that sorting all transactions.
 const sortTransactions = function (e) {
   e.preventDefault();
   displayTransactions(currentAccount.transactions, !areTransactionsSorted);
@@ -231,3 +327,31 @@ const sortTransactions = function (e) {
 };
 
 btnSort.addEventListener("click", sortTransactions);
+
+const nowDate = new Date();
+const nowDay = `${nowDate.getDate()}`.padStart(2, 0);
+const nowMounth = `${nowDate.getMonth() + 1}`.padStart(2, 0);
+const nowYear = nowDate.getFullYear();
+
+labelDate.textContent = `${nowDay}/${nowMounth}/${nowYear}`;
+
+const startLogoutTimer = function () {
+  let time = 300;
+
+  const logOutTimerFunc = function () {
+    const minutes = String(Math.trunc(time / 60)).padStart(2, "0");
+    const seconds = String(time % 60).padStart(2, "0");
+    labelTimer.textContent = `${minutes}:${seconds}`;
+    time--;
+    if (time < 0) {
+      clearInterval(logOutTimer);
+      containerApp.style.opacity = 0;
+      labelWelcome.textContent = `Увійдіть до свого кабінету`;
+    }
+  };
+
+  logOutTimerFunc();
+  const logOutTimer = setInterval(logOutTimerFunc, 1000);
+
+  return logOutTimer;
+};
